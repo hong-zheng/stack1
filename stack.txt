@@ -1,0 +1,193 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+// 支持动态增长的栈
+typedef int STDataType;
+#define _CAPACITY 4
+typedef struct Stack
+{
+	STDataType* _a;
+	int _top;		// 栈顶
+	int _capacity;  // 容量 
+}Stack;
+// 动态扩容函数
+void Realloc(Stack** ps){
+	(*ps)->_capacity *= 2;
+	(*ps)->_a = (STDataType*)realloc((*ps)->_a, (*ps)->_capacity*sizeof(STDataType));
+}
+// 初始化栈 
+void StackInit(Stack* ps){
+	ps->_capacity = _CAPACITY;
+	ps->_a = (STDataType*)malloc(ps->_capacity*sizeof(STDataType));
+	ps->_top = -1;
+}
+// 入栈 
+void StackPush(Stack* ps, STDataType data){
+	if (NULL == ps){
+		return;
+	}
+	// 入栈之前首先检查是否需要扩容
+	if (ps->_top+1 == ps->_capacity){
+		Realloc(&ps);
+	}
+	ps->_a[++ps->_top] = data;
+}
+// 出栈 
+void StackPop(Stack* ps){
+	// 出栈时先检查栈是否为空，为空就不能出栈
+	// 在此也可以不检查，在外面提供相应的接口用于栈是否为空的检查
+	if ( ps->_top == -1){
+		return;
+	}
+	ps->_top--;
+}
+// 获取栈顶元素 
+STDataType StackTop(Stack* ps){
+	// 获取栈顶元素时先检查栈是否为空，为空就不能出栈
+	// 在此也可以不检查，在外面提供相应的接口用于栈是否为空的检查
+	if (ps->_top == -1){
+		return (STDataType)0;
+	}
+	return ps->_a[ps->_top];
+}
+// 获取栈中有效元素个数 
+int StackSize(Stack* ps){
+	return ps->_top+1;
+}
+// 检测栈是否为空，如果为空返回非零结果，如果不为空返回0 
+int StackEmpty(Stack* ps){
+	return ps->_top+1;
+}
+// 销毁栈 
+void StackDestroy(Stack* ps){
+	if ( ps->_a){
+		free( ps->_a);
+		ps->_a = NULL;
+		ps->_capacity = 0;
+		ps->_top = -1;
+	}
+}
+
+int mailn(){
+
+	Stack ps;
+	StackInit(&ps);
+	StackPush(&ps, 1);
+	StackPush(&ps, 2);
+	StackPush(&ps, 3);
+	StackPush(&ps, 4);
+	StackPush(&ps, 5);
+	StackPush(&ps, 6);
+	StackPush(&ps, 7);
+	StackPush(&ps, 8);
+
+	while (StackEmpty(&ps) != 0){
+		STDataType cur = StackTop(&ps);
+		printf("%d ", cur);
+		StackPop(&ps);
+	}
+	system("pause");
+	return 0;
+}
+
+// 链式结构：表示队列 
+typedef struct QListNode
+{
+	struct QListNode* _next;
+	STDataType _data;
+}QNode;
+
+// 队列的结构 
+typedef struct Queue{
+	QNode* _front;
+	QNode* _rear;
+}Queue;
+
+// 初始化队列 
+void QueueInit(Queue* q){
+	q->_front = (QNode*)malloc(sizeof(QNode));
+	q->_front->_next = NULL;
+	q->_front->_data = 0;
+	q->_rear = q->_front;
+}
+
+QNode* creatNode(STDataType data){
+	QNode* newnode = (QNode*)malloc(sizeof(QNode));
+	newnode->_data = data;
+	newnode->_next = NULL;
+	return newnode;
+}
+// 队尾入队列 
+void QueuePush(Queue* q, STDataType data){
+	QNode* newnode = creatNode(data);
+	q->_rear->_next = newnode;
+	q->_rear = newnode;
+}
+// 队头出队列 
+void QueuePop(Queue* q){
+	q->_front->_next = q->_front->_next->_next;
+}
+// 获取队列头部元素 
+STDataType QueueFront(Queue* q){
+	return q->_front->_next;
+}
+// 获取队列队尾元素 
+STDataType QueueBack(Queue* q){
+	return q->_rear;
+}
+// 获取队列中有效元素个数 
+int QueueSize(Queue* q){
+	int num = 0;
+	QNode* cur = q->_front->_next;
+	while (cur){
+		++num;
+		cur = cur->_next;
+	}
+	return num;
+}
+// 检测队列是否为空，如果为空返回非零结果，如果非空返回0 
+int QueueEmpty(Queue* q){
+	if ( q->_front->_next == NULL){
+		return 1;
+	}
+	return 0;
+}
+// 销毁队列 
+void QueueDestroy(Queue* q){
+	if (q == NULL){
+		return;
+	}
+	QNode* cur = QueueFront(q);
+	QNode* prev = cur;
+	while (cur){
+		prev = cur;
+		free(cur);
+		cur = cur->_next;
+	}
+	free(q->_front);
+	q->_front = NULL;
+	q->_rear = NULL;
+}
+
+int main(){
+
+	Queue q;
+	QueueInit(&q);
+	QueuePush(&q, 1);
+	QueuePush(&q, 2);
+	QueuePush(&q, 3);
+	QueuePush(&q, 4);
+	QueuePush(&q, 5);
+	QueuePush(&q, 6);
+
+	QNode* 	cur = QueueFront(&q);
+	while (cur){
+		printf("%d ",cur->_data);
+		QueuePop(&q);
+		cur = QueueFront(&q);
+	}
+	system("pause");
+	return 0;
+}
